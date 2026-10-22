@@ -42,7 +42,7 @@ jobs:
         run: |
           docker compose -f examples/docker/compose.client.yaml config --quiet
           docker compose -f examples/docker/compose.server.yaml config --quiet
-      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-kubectl@v5
         with:
           version: 'v1.36.1'
       - name: Render Kubernetes examples

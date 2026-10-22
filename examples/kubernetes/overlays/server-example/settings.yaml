@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: server
+          env:
+            # Add only your actual ingress/reverse proxy source IPs or CIDRs.
+            - name: TRUSTED_PROXY_CIDRS
+              value: ""
+            - name: REAL_IP_HEADER
+              value: X-Forwarded-For

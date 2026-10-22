@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns-client
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: cloudflare-ddns-client}
+  template:
+    metadata:
+      labels: {app: cloudflare-ddns-client}
+    spec:
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: client
+          image: ghcr.io/pwshdevs/cloudflare-ddns-client:edge
+          imagePullPolicy: Always
+          env:
+            - name: CLOUDFLARE_API_TOKEN
+              valueFrom:
+                secretKeyRef: {name: cloudflare-ddns-client, key: api-token}
+            - name: IP_URL
+              value: https://ip.example.com/ip
+            - name: POLL_INTERVAL_SECONDS
+              value: "300"
+          volumeMounts:
+            - {name: config, mountPath: /config, readOnly: true}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: config
+          configMap: {name: cloudflare-ddns-client}

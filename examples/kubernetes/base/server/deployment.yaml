@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: cloudflare-ddns-server}
+  template:
+    metadata:
+      labels: {app: cloudflare-ddns-server}
+    spec:
+      securityContext:
+        sysctls:
+          - {name: net.ipv4.ip_unprivileged_port_start, value: "0"}
+      containers:
+        - name: server
+          image: ghcr.io/pwshdevs/cloudflare-ddns-server:edge
+          imagePullPolicy: Always
+          env:
+            - {name: PORT, value: "80"}
+            - {name: REAL_IP_HEADER, value: X-Forwarded-For}
+            # Set only to your ingress proxy's actual source addresses.
+            - {name: TRUSTED_PROXY_CIDRS, value: ""}
+          ports:
+            - {name: http, containerPort: 80}
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+          volumeMounts:
+            - {name: temporary, mountPath: /tmp}
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: temporary
+          emptyDir: {medium: Memory, sizeLimit: 16Mi}

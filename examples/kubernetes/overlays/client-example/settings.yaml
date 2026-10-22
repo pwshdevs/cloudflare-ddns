@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns-client
+spec:
+  template:
+    spec:
+      containers:
+        - name: client
+          env:
+            - name: IP_URL
+              value: https://ip.example.com/ip
+            - name: POLL_INTERVAL_SECONDS
+              value: "300"

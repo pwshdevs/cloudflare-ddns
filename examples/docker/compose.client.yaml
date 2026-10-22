@@ -1,0 +1,23 @@
+# Example: customize client.env and config/records.json before running.
+name: cloudflare-ddns-client
+services:
+  ddns:
+    image: ghcr.io/pwshdevs/cloudflare-ddns-client:edge
+    restart: unless-stopped
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN in client.env}
+      IP_URL: ${IP_URL:?Set IP_URL in client.env to your public-IP server URL}
+      POLL_INTERVAL_SECONDS: ${POLL_INTERVAL_SECONDS:-300}
+      DRY_RUN: ${DRY_RUN:-false}
+    volumes:
+      - ./config:/config:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '2'

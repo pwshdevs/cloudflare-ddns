@@ -1,0 +1,6 @@
+{
+  "records": [
+    { "zone_id": "YOUR_32_CHARACTER_ZONE_ID", "name": "home.example.com" },
+    { "zone_id": "YOUR_32_CHARACTER_ZONE_ID", "name": "vpn.example.com" }
+  ]
+}

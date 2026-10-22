@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+/config/
+/records.json
+__pycache__/
+*.py[cod]
+/examples/kubernetes/overlays/*-local/
+/examples/docker/*.env
+/examples/docker/config/

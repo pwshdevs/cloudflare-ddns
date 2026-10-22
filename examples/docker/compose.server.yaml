@@ -1,0 +1,25 @@
+# Example: customize server.env for your host and reverse proxy.
+name: cloudflare-ddns-server
+services:
+  ip-server:
+    image: ghcr.io/pwshdevs/cloudflare-ddns-server:edge
+    restart: unless-stopped
+    environment:
+      PORT: ${CONTAINER_PORT:-80}
+      REAL_IP_HEADER: ${REAL_IP_HEADER:-X-Forwarded-For}
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${HOST_PORT:-8090}:${CONTAINER_PORT:-80}"
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "0"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '2'

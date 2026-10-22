@@ -6,6 +6,10 @@ http {
     include /tmp/trusted-proxies.conf;
     real_ip_header ${REAL_IP_HEADER};
     real_ip_recursive on;
+    # Use the restored client address, never an unverified forwarding header.
+    limit_req_zone $binary_remote_addr zone=ip_clients:1m rate=1r/s;
+    limit_req_status 429;
+    limit_req_log_level notice;
     access_log off;
     server_tokens off;
     client_body_temp_path /tmp/client_temp;
@@ -17,9 +21,17 @@ http {
         listen ${PORT};
         server_name _;
         location = /ip {
+            limit_req zone=ip_clients burst=5 nodelay;
+            add_header Cache-Control "no-store" always;
+            # A return here runs before limit_req. Generate the response only
+            # after the access phases have enforced the limit.
+            root /var/empty;
+            try_files /__ddns_ip_response__ @ip_response;
+        }
+        location @ip_response {
             default_type application/json;
             add_header Cache-Control "no-store" always;
-            return 200 '{"ip":"$remote_addr"}\n';
+            return 200 '{"ip":"$remote_addr","service":"cloudflare-ddns-server","version":"${SERVER_VERSION}","revision":"${SERVER_REVISION}"}\n';
         }
         location = /healthz {
             access_log off;

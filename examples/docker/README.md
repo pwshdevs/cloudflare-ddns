@@ -87,6 +87,12 @@ bypass caching and browser challenges for this route. With Cloudflare, use
 Full (strict) TLS to your reverse proxy and avoid Pseudo IPv4's overwrite mode.
 `/healthz` returns `ok`; other routes return 404. Access logging is disabled.
 
+`/ip` is limited to one request per second per client IP, with a burst allowance
+of five excess requests. Further requests receive HTTP 429 without being queued.
+The limit uses the restored client IP behind trusted proxies; clients sharing a
+public IP share the allowance. `/healthz` remains available during throttling.
+Limits are per container; use your ingress or CDN for a limit across replicas.
+
 ## Image versions
 
 Both examples use `edge`, published from `main`. To use a fixed version, change

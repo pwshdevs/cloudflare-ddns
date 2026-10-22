@@ -1,5 +1,12 @@
 #!/bin/sh
 set -eu
+# These values are inserted into both Nginx configuration and JSON.
+for value in "$SERVER_VERSION" "$SERVER_REVISION"; do
+    case "$value" in ''|*[!a-zA-Z0-9._+-]*)
+        echo "Server build metadata must contain only letters, digits, ., _, + or -" >&2
+        exit 1;;
+    esac
+done
 case "$PORT" in ''|*[!0-9]*) echo "PORT must be an integer from 1 to 65535" >&2; exit 1;; esac
 if [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
     echo "PORT must be an integer from 1 to 65535" >&2; exit 1
@@ -14,5 +21,5 @@ for cidr in $(printf '%s' "${TRUSTED_PROXY_CIDRS:-}" | tr ',' ' '); do
     case "$cidr" in */0) echo "Refusing to trust the entire Internet" >&2; exit 1;; esac
     printf 'set_real_ip_from %s;\n' "$cidr" >> /tmp/trusted-proxies.conf
 done
-envsubst '${PORT} ${REAL_IP_HEADER}' < /etc/nginx/nginx.conf.template > /tmp/nginx.conf
+envsubst '${PORT} ${REAL_IP_HEADER} ${SERVER_VERSION} ${SERVER_REVISION}' < /etc/nginx/nginx.conf.template > /tmp/nginx.conf
 exec nginx -c /tmp/nginx.conf -g 'daemon off;'

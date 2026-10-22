@@ -36,6 +36,21 @@ and trusted reverse proxies, including Cloudflare. For public use, terminate TLS
 at a reverse proxy and disable caching for `/ip`. See the deployment examples for
 proxy configuration.
 
+`/ip` allows one request per second per client IP, with five excess requests
+allowed in a burst. Further requests receive HTTP 429. `/healthz` is exempt.
+Limits apply per server instance and use the original client IP behind trusted
+proxies.
+
+Successful `/ip` responses include the service and build identity:
+
+```json
+{"ip":"203.0.113.10","service":"cloudflare-ddns-server","version":"edge","revision":"ab6ad19..."}
+```
+
+GitHub builds use `edge` or the release version and the full commit SHA.
+Local builds default to version `dev` and revision `unknown`; set Docker build
+arguments `VERSION` and `REVISION` to override them. The client reads only `ip`.
+
 ## Container images
 
 GitHub Actions builds both images for `linux/amd64` and `linux/arm64`:

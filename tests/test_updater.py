@@ -62,7 +62,8 @@ class UpdaterTests(unittest.TestCase):
             request.return_value = {"ip": ip}
             with self.assertRaises(ValueError):
                 updater.public_ip("http://example.com/ip")
-        request.return_value = {"ip": "1.1.1.1"}
+        request.return_value = {"ip": "1.1.1.1", "service": "cloudflare-ddns-server",
+                                "version": "edge", "revision": "ab6ad19"}
         self.assertEqual(updater.public_ip("http://example.com/ip"), "1.1.1.1")
 
     @patch.dict(os.environ, {"CLOUDFLARE_API_TOKEN": "test", "IP_URL": "https://ip.example.com/ip"}, clear=True)

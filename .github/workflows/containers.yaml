@@ -50,9 +50,9 @@ jobs:
           kubectl kustomize examples/kubernetes/overlays/client-example > /dev/null
           kubectl kustomize examples/kubernetes/overlays/server-example > /dev/null
       - name: Build server
-        run: docker build -t ddns-server:test cloudflare-ddns-server
+        run: docker build --build-arg VERSION=1.2.3-rc.1 --build-arg "REVISION=$GITHUB_SHA" -t ddns-server:test cloudflare-ddns-server
       - name: Test direct and proxied server
-        run: python tests/smoke_proxy.py ddns-server:test
+        run: python tests/smoke_proxy.py ddns-server:test 1.2.3-rc.1 "$GITHUB_SHA"
   images:
     needs: test
     runs-on: ubuntu-latest
@@ -91,6 +91,9 @@ jobs:
       - uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.image }}
+          build-args: |
+            ${{ matrix.image == 'cloudflare-ddns-server' && format('VERSION={0}', steps.meta.outputs.version) || '' }}
+            ${{ matrix.image == 'cloudflare-ddns-server' && format('REVISION={0}', github.sha) || '' }}
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}

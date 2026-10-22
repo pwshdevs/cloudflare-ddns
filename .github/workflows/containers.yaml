@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Validate release tag
@@ -42,7 +42,7 @@ jobs:
         run: |
           docker compose -f examples/docker/compose.client.yaml config --quiet
           docker compose -f examples/docker/compose.server.yaml config --quiet
-      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-kubectl@v5
         with:
           version: 'v1.36.1'
       - name: Render Kubernetes examples
@@ -65,21 +65,21 @@ jobs:
       matrix:
         image: [cloudflare-ddns-client, cloudflare-ddns-server]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Normalize registry owner
         shell: bash
         run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         if: github.event_name == 'push'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ghcr.io/${{ env.OWNER }}/${{ matrix.image }}
@@ -88,7 +88,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.image }}
           platforms: linux/amd64,linux/arm64
